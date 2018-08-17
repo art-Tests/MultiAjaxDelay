@@ -10,17 +10,24 @@
     <p>
         Ref:
         <a href="http://blog.darkthread.net/post-2017-06-07-mvc-slow-magic.aspx" target="_blank">http://blog.darkthread.net/post-2017-06-07-mvc-slow-magic.aspx</a>
-
     </p>
     <div>
         <button id="btnAjax">測試 AJAX 呼叫</button>
         <button id="btnSnail">變蝸牛</button>
+
+        <button id="btnTestAjax" data-ctrl="Home">5 Ajax Call (每一秒送出Delay 3sec的請求)</button>
+    </div>
+    <hr />
+    <div>
+        <label for="no1Ajax">第一個Ajax的秒數</label>
+        <input type="number" id="no1Ajax" min="0" max="5" value="1" /><br />
+        <label for="no2Ajax">第二個Ajax的秒數</label>
+        <input type="number" id="no2Ajax" min="0" max="5" value="3" /><br />
         <button class="btnTest" data-ctrl="Home">2 Ajax Call (Home Controller)</button>
         <button class="btnTest" data-ctrl="Test">2 Ajax Call (SessionState Disable)</button>
         <button class="btnTest" data-ctrl="ReadOnly">2 Ajax Call (SessionState ReadOnly)</button>
-        <button id="btnTestAjax" data-ctrl="Home">5 Ajax Call (每一秒送出Delay 3sec的請求)</button>
     </div>
-    <hr/>
+    <hr />
     <ul></ul>
 
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
@@ -64,30 +71,26 @@
         });
 
         $(".btnTest").click(function () {
-            let ctrlname = $(this).data("ctrl")
-            $.post(`/${ctrlname}/Delay5`, { begin: GetNow() })
-                .done(function (res) {
-                    $("ul").append(`<li>${ctrlname}:${res}</li>`);
-                });
-            $.post(`/${ctrlname}/Delay0`, { begin: GetNow() })
-                .done(function (res) {
-                    $("ul").append(`<li>${ctrlname}:${res}</li>`);
-                });
+            let delayList = [
+                parseInt($('#no1Ajax').val(), 10),
+                parseInt($('#no2Ajax').val(), 10),
+            ]
+            let ctrl = $(this).data("ctrl")
+            Begin2AjaxRequest(ctrl, delayList)
         });
 
-        $(".btnTest2").click(function () {
-            let ctrlname = $(this).data("ctrl")
-            $.post(`/${ctrlname}/Delay5`, { begin: GetNow() })
-                .done(function (res) {
-                    $("ul").append(`<li>${ctrlname}:${res}</li>`);
-                });
-            $.post(`/${ctrlname}/Delay0`, { begin: GetNow() })
-                .done(function (res) {
-                    $("ul").append(`<li>${ctrlname}:${res}</li>`);
-                });
-        });
+        function Begin2AjaxRequest(ctrl, delayList) {
+            for (var i = 0; i < delayList.length; i++) {
+                SendAjaxRequest(ctrl, delayList[i], GetNow())
+            }
+        }
 
+        function SendAjaxRequest(ctrl, delay, begin) {
+            $.post(`/${ctrl}/DelayNum`, { delaySec: delay, begin: begin })
+                .done(function (res) {
+                    $("ul").append(`<li>${ctrl}:${res}</li>`);
+                });
+        }
     </script>
 </body>
-
 </html>
