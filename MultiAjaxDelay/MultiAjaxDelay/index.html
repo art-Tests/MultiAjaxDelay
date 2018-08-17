@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+
+<body>
+    <p>
+        Ref:
+        <a href="http://blog.darkthread.net/post-2017-06-07-mvc-slow-magic.aspx" target="_blank">http://blog.darkthread.net/post-2017-06-07-mvc-slow-magic.aspx</a>
+
+    </p>
+    <div>
+        <button id="btnAjax">測試 AJAX 呼叫</button>
+        <button id="btnSnail">變蝸牛</button>
+        <button class="btnTest" data-ctrl="Home">2 Ajax Call (Home Controller)</button>
+        <button class="btnTest" data-ctrl="Test">2 Ajax Call (SessionState Disable)</button>
+        <button class="btnTest" data-ctrl="ReadOnly">2 Ajax Call (SessionState ReadOnly)</button>
+        <button id="btnTestAjax" data-ctrl="Home">5 Ajax Call (每一秒送出Delay 3sec的請求)</button>
+    </div>
+    <hr/>
+    <ul></ul>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+    <script>
+        function pad2(n) { return n < 10 ? '0' + n : n }
+        function GetNow() {
+            let date = new Date()
+            return `${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`
+        }
+        $("#btnTestAjax").click(function () {
+            let i = 1
+            function timeout() {
+                setTimeout(function () {
+                    console.log(GetNow())
+                    $.post("/Home/SimuAjaxCall", { seqNo: i, delay: 3 })
+                        .done(function (res) {
+                            $("ul").append("<li>" + res + "</li>");
+                        });
+
+                    i++
+                    if (i > 5) return
+                    timeout();
+                }, 1000);
+            }
+            timeout()
+        });
+        $("#btnAjax").click(function () {
+            //發出7個耗時1秒的AJAX呼叫
+            for (var i = 1; i <= 7; i++) {
+                $.post("/Home/SimuAjaxCall", { seqNo: i, delay: 1 })
+                    .done(function (res) {
+                        $("ul").append("<li>" + res + "</li>");
+                    });
+            }
+        });
+        $("#btnSnail").click(function () {
+            $.post("/Home/Snail")
+                .done(function (res) {
+                    $("ul").append("<li>" + res + "</li>");
+                });
+        });
+
+        $(".btnTest").click(function () {
+            let ctrlname = $(this).data("ctrl")
+            $.post(`/${ctrlname}/Delay5`, { begin: GetNow() })
+                .done(function (res) {
+                    $("ul").append(`<li>${ctrlname}:${res}</li>`);
+                });
+            $.post(`/${ctrlname}/Delay0`, { begin: GetNow() })
+                .done(function (res) {
+                    $("ul").append(`<li>${ctrlname}:${res}</li>`);
+                });
+        });
+
+        $(".btnTest2").click(function () {
+            let ctrlname = $(this).data("ctrl")
+            $.post(`/${ctrlname}/Delay5`, { begin: GetNow() })
+                .done(function (res) {
+                    $("ul").append(`<li>${ctrlname}:${res}</li>`);
+                });
+            $.post(`/${ctrlname}/Delay0`, { begin: GetNow() })
+                .done(function (res) {
+                    $("ul").append(`<li>${ctrlname}:${res}</li>`);
+                });
+        });
+
+    </script>
+</body>
+
+</html>
